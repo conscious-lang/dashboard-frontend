@@ -55,7 +55,7 @@ projects <- projects %>%
   mutate(pull = future_map2(url,
                      str_c('clones',org,repo,sep='/'),
                      safe_pull_or_clone,
-                     .progress = T))
+                     .progress = interactive()))
 
 count_words <- function(org, repo, word) {
   # Search path for this repo
@@ -88,11 +88,10 @@ projects %>%
 
 # Count words in clone
 projects %>%
-  filter(!is.na(pull)) %>% # avoid fails
-  mutate(blacklist = map2_int(org, repo, count_words, 'blacklist'),
-         whitelist = map2_int(org, repo, count_words, 'whitelist'),
-         master    = map2_int(org, repo, count_words, 'master'),
-         slave     = map2_int(org, repo, count_words, 'slave'),
+  mutate(blacklist = future_map2_int(org, repo, count_words, 'blacklist', .progress = interactive()),
+         whitelist = future_map2_int(org, repo, count_words, 'whitelist', .progress = interactive()),
+         master    = future_map2_int(org, repo, count_words, 'master',    .progress = interactive()),
+         slave     = future_map2_int(org, repo, count_words, 'slave',     .progress = interactive())
   ) -> projects
 
 projects <- projects %>% filter(blacklist + whitelist + master + slave > 0)

@@ -1,0 +1,89 @@
+# Cron script to clone the necessary git repos
+
+library(pins)
+library(tidyverse)
+library(git2r)
+library(here)
+
+setwd(here())
+
+projects <- pin_get('cl_projects') %>%
+  # temporary, github only, other styles to come
+  filter(str_detect(repo,'github.com')) %>%
+  # split up the path so we can use it for things
+  mutate(url   = repo,
+         path  = str_split(url,'/'),
+         parts = map_int(path, ~{ .x %>%
+                                    unlist() %>%
+                                    length() })
+  ) %>%
+  filter(parts == 5) %>% # habndle orgs (4 parts) later
+  mutate(org  = map_chr(path, ~{ unlist(.x) %>%
+                                   tail(2) %>%
+                                   head(1) }),
+         repo = map_chr(path, ~{ unlist(.x) %>%
+                                   tail(1) })
+  ) %>%
+  select(url, org, repo)
+
+# Holding area
+if (!dir.exists(here('clones'))) { dir.create(here('clones'))}
+
+# Create any necessary org dirs
+for (dir in unique(projects$org)) {
+  if (!dir.exists(here('clones',dir))) { dir.create(here('clones',dir))}
+}
+
+# Wrapper to clone or pull depending on the repo presence
+pull_or_clone <- function(url, path) {
+  # Do we need to switch to shallow clone?
+  if (dir.exists(path)) {
+    pull(path)
+  } else {
+    clone(url, path)
+  }
+}
+# Do it nicely, don't break the loop
+safe_pull_or_clone = possibly(pull_or_clone, otherwise = NA)
+
+# Clone repos
+library(furrr)
+plan(multiprocess, workers=4)
+projects <- projects %>%
+  mutate(pull = future_map2(url,
+                     str_c('clones',org,repo,sep='/'),
+                     safe_pull_or_clone,
+                     .progress = T))
+
+count_words <- function(org, repo, word) {
+  # Search path for this repo
+  path = here('clones',org,repo)
+
+  # This is very ugly, but ag returns exit 1 on match-not-found
+  suppressWarnings(
+    system2('ag',c('-c', word, path), stdout = TRUE, stderr = FALSE)
+  ) %>%
+    as.integer() %>%
+    sum() %>%
+    return()
+}
+
+
+# Note the failures
+projects %>%
+  filter(is.na(pull)) %>%
+  mutate(pull = dir.exists(here('clones',org,repo))) %>%
+  select(url, pull) -> failures
+
+# Count words in clone
+projects %>%
+  filter(!is.na(pull)) %>% # avoid fails
+  mutate(blacklist = map2_int(org, repo, count_words, 'blacklist'),
+         whitelist = map2_int(org, repo, count_words, 'whitelist'),
+         master    = map2_int(org, repo, count_words, 'master'),
+         slave     = map2_int(org, repo, count_words, 'slave'),
+  ) -> projects
+
+projects <- projects %>% filter(blacklist + whitelist + master + slave > 0)
+pin(failures,name='cl_fails')
+pin(projects,name='cl_results')

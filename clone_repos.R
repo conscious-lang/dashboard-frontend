@@ -40,9 +40,9 @@ for (dir in unique(projects$org)) {
 pull_or_clone <- function(url, path) {
   # Do we need to switch to shallow clone?
   if (dir.exists(path)) {
-    pull(path)
+    git2r::pull(path)
   } else {
-    clone(url, path)
+    system2('git', c('clone', '--depth', '1', '--quiet', url, path))
   }
 }
 # Do it nicely, don't break the loop

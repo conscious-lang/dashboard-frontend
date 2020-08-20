@@ -64,12 +64,21 @@ count_words <- function(org, repo, word) {
   # This is very ugly, but ag returns exit 1 on match-not-found
   suppressWarnings(
     system2('ag',c('-c', word, path), stdout = TRUE, stderr = FALSE)
-  ) %>%
+  ) -> res
+
+  # Ag2 vs Ag1
+  if (length(res) > 0 && str_detect(res[1],':')) {
+    #AG1 returns paths too
+    res %>%
+      str_extract(':[0-9]*$') %>%
+      str_remove(':') -> res
+  }
+
+  res %>%
     as.integer() %>%
     sum() %>%
     return()
 }
-
 
 # Note the failures
 projects %>%

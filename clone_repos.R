@@ -7,7 +7,9 @@ library(here)
 
 setwd(here())
 
-projects <- pin_get('cl_projects') %>%
+pins::board_register_local(name = 'conscious_lang', cache = '/tmp')
+
+projects <- pin_get('cl_projects', board = 'conscious_lang') %>%
   # temporary, github only, other styles to come
   filter(str_detect(repo,'github.com')) %>%
   # split up the path so we can use it for things
@@ -85,5 +87,6 @@ projects %>%
   ) -> projects
 
 projects <- projects %>% filter(blacklist + whitelist + master + slave > 0)
-pin(failures,name='cl_fails')
-pin(projects,name='cl_results')
+
+pin(failures,name='cl_fails', board = 'conscious_lang')
+pin(projects,name='cl_results', board = 'conscious_lang')

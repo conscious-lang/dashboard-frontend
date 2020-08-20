@@ -25,7 +25,7 @@ clean_ag_output <- function(string) {
 
 
 server <- function(input, output, session) {
-  d <- pin_reactive('cl_results', board = 'local')
+  d <- pin_reactive('cl_results', board = 'conscious_lang')
 
   output$plot1 <- renderPlot({
     bar_plot(d(),blacklist)

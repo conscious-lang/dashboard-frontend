@@ -24,4 +24,5 @@ projects[,4] %>%
   mutate(repo = str_trim(repo),
          repo = str_remove(repo,'/$')) -> projects
 
-pin(projects,name='cl_projects')
+pins::board_register_local(name = 'conscious_lang', cache = '/tmp')
+pin(projects,name='cl_projects', board = 'conscious_lang')

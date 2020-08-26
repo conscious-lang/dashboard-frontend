@@ -2,10 +2,11 @@ header <- dashboardHeader(title = "Concious Language Project")
 
 sidebar <- dashboardSidebar(
   sidebarMenu(id = 'menu',
-    menuItem("Dashboard",  tabName = "dash",    icon = icon("dashboard")),
-    menuItem("History",    tabName = "history", icon = icon("chart-line")),
-    menuItem("Tables",     tabName = "tables",  icon = icon("table")),
-    menuItem("Repo Files", tabName = "files",   icon = icon("search"))
+              menuItem("Dashboard",  tabName = "dash",    icon = icon("dashboard")),
+              menuItem("History",    tabName = "history", icon = icon("chart-line")),
+              menuItem("Tables",     tabName = "tables",  icon = icon("table")),
+              menuItem("Deltas",     tabName = "deltas",  icon = icon("arrows-alt-v")),
+              menuItem("Repo Files", tabName = "files",   icon = icon("search"))
   )
 )
 
@@ -43,6 +44,10 @@ body <- dashboardBody(
             h2("Searchable / Sortable table of counts"),
             DT::dataTableOutput('table')
     ),
+    tabItem(tabName = "deltas",
+            h2("Searchable / Sortable table of changes"),
+            DT::dataTableOutput('deltas')
+    ),
     tabItem(tabName = "files",
             h2("Word counts per file in a given repo"),
             fluidRow(
@@ -53,16 +58,18 @@ body <- dashboardBody(
                   selectInput('word',NULL,
                           c('blacklist','whitelist','master','slave'))
               ),
-              box(title = 'Search', width = 2,
-                  actionButton('search', 'Go!'))
+              box(width = 2,
+                  actionButton('search', 'Search'))
             ),
             DT::dataTableOutput('filetable')
     )
   )
 )
 
-dashboardPage(
-  header,
-  sidebar,
-  body
-)
+function(request) {
+  dashboardPage(
+    header,
+    sidebar,
+    body
+  )
+}

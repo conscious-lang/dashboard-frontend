@@ -5,7 +5,6 @@ sidebar <- dashboardSidebar(
               menuItem("Dashboard",  tabName = "dash",    icon = icon("dashboard")),
               menuItem("History",    tabName = "history", icon = icon("chart-line")),
               menuItem("Tables",     tabName = "tables",  icon = icon("table")),
-              menuItem("Deltas",     tabName = "deltas",  icon = icon("arrows-alt-v")),
               menuItem("Repo Files", tabName = "files",   icon = icon("search"))
   )
 )
@@ -41,12 +40,19 @@ body <- dashboardBody(
             p("TBD - we don't have historical data yet")
     ),
     tabItem(tabName = "tables",
-            h2("Searchable / Sortable table of counts"),
-            DT::dataTableOutput('table')
-    ),
-    tabItem(tabName = "deltas",
-            h2("Searchable / Sortable table of changes"),
-            DT::dataTableOutput('deltas')
+            h2("Searchable / Sortable tables of counts & changes"),
+            fluidRow(
+              tabBox(width=12, id = 'table_tabs',
+                tabPanel("Current counts",
+                         p("Counts of each search in the latest 'git clone'"),
+                         DT::dataTableOutput('table')
+                ),
+                tabPanel("Change from last run",
+                         p("Changes in count since the previous 'git clone'"),
+                         DT::dataTableOutput('deltas')
+                )
+              )
+            )
     ),
     tabItem(tabName = "files",
             h2("Word counts per file in a given repo"),
@@ -56,7 +62,7 @@ body <- dashboardBody(
               ),
               box(title = 'Word', width = 3,
                   selectInput('word',NULL,
-                          c('blacklist','whitelist','master','slave'))
+                              c('blacklist','whitelist','master','slave'))
               ),
               box(width = 2,
                   actionButton('search', 'Search'))

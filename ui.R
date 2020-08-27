@@ -21,18 +21,18 @@ body <- dashboardBody(
             fluidRow(
               box(title = 'Blacklist' ,status = "primary",
                   solidHeader = TRUE,
-                  plotOutput("plot1", height = 290)),
+                  girafeOutput("plot1", height = 290)),
               box(title = 'Whitelist', status = "primary",
                   solidHeader = TRUE,
-                  plotOutput("plot2", height = 290))
+                  girafeOutput("plot2", height = 290))
             ),
             fluidRow(
               box(title = 'Master', status = "primary",
                   solidHeader = TRUE,
-                  plotOutput("plot3", height = 290)),
+                  girafeOutput("plot3", height = 290)),
               box(title = 'Slave', status = "primary",
                   solidHeader = TRUE,
-                  plotOutput("plot4", height = 290))
+                  girafeOutput("plot4", height = 290))
             )
     ),
     tabItem(tabName = "history",

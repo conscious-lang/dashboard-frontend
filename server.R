@@ -1,36 +1,21 @@
 library(pins)
 library(tidyverse)
 
-bar_plot <- function(d,word) {
-  word_str <- quo_name(enquo(word))
-  d %>%
-    mutate(label = glue('{org}/{repo}')) %>%
-    arrange(-{{word}}) %>%
-    slice(1:10) %>%
-    ggplot(aes(fct_reorder(label,{{word}}),{{word}})) +
-    geom_col(fill = '#CB333B') +
-    coord_flip() +
-    labs(title = NULL,
-         caption = glue('Results of "sum(ag -c {word_str} $repo)"'),
-         x = 'Repo', y = 'Count') +
-    theme(text = element_text(size = 18))
-}
-
 server <- function(input, output, session) {
 
-  output$plot1 <- renderPlot({
+  output$plot1 <- renderGirafe({
     bar_plot(d,blacklist)
   })
 
-  output$plot2 <- renderPlot({
+  output$plot2 <- renderGirafe({
     bar_plot(d,whitelist)
   })
 
-  output$plot3 <- renderPlot({
+  output$plot3 <- renderGirafe({
     bar_plot(d,master)
   })
 
-  output$plot4 <- renderPlot({
+  output$plot4 <- renderGirafe({
     bar_plot(d,slave)
   })
 

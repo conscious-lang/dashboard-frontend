@@ -1,0 +1,25 @@
+---
+- hosts: plumber
+  tasks:
+    - name: CRAN Apt key
+      apt_key:
+        keyserver: keys.gnupg.net
+        id: E19F5F87128899B192B1A2C2AD5F960A256A04AF
+    - name: CRAN Squeeze R-3.6 apt-repo
+      apt_repository:
+        repo: deb http://cloud.r-project.org/bin/linux/debian stretch-cran35/
+        state: present
+        update_cache: yes
+        filename: cran
+    - name: Install R from CRAN
+      package:
+        name: r-base
+        state: latest
+    - name: Install R deps
+      package:
+        name:
+          - libcurl4-openssl-dev
+          - libssl-dev
+          - libxml2-dev
+        state: latest
+  become: yes

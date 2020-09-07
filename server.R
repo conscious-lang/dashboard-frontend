@@ -57,7 +57,7 @@ server <- function(input, output, session) {
     h %>%
       arrange(date) %>%
       group_by(url) %>%
-      summarise(across(where(is.integer), ~{last(.x) - first(.x)},
+      summarise(across(where(is.integer), ~{last(.x) - nth(.x,-2L)},
                        .names = "delta_{.col}")) %>%
       ungroup() %>%
       rowwise() %>%
@@ -80,7 +80,7 @@ server <- function(input, output, session) {
   output$filetable <- DT::renderDataTable({
     input$search # depend on go button
 
-    httr::GET(url  = 'http://dev.stats.eng.ansible.com:443',
+    httr::GET(url  = 'http://dev.stats.eng.ansible.com:7033',
               path = '/search',
               query = list(repo = input$repo, word = input$word)
     ) -> res

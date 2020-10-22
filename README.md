@@ -1,4 +1,4 @@
-# Conscious Language Dashboard - backend
+# Conscious Language Dashboard - frontend
 
 This repo contains the source for the [RShiny](https://shiny.rstudio.com/)
 dashboard used by the Conscious Language project. You can view the dashboard

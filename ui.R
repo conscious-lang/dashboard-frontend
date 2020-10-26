@@ -134,7 +134,7 @@ body <- dashboardBody(
               "accept the argument that \"this isn't my code\" then we're",
               "missing the chance to positively impact many other projects by",
               "working with those upstreams"),
-            tags$li(strong('Nowhere to hide')),
+            tags$li(strong('Nowhere to hide (code)')),
             p("It is inevitable that this project will provoke debate, and that's",
               "fine. But *we* still want to see what's happening out there, and if",
               "we exclude directories, then developers", strong('may'), 'decide',

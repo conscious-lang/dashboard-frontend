@@ -24,7 +24,7 @@ bar_plot <- function(d,word) {
     scale_x_discrete(labels = function(x) str_trunc(x, side = 'left', width = 20)) +
     coord_flip() +
     labs(title = NULL,
-         caption = glue('Results of "sum(ag -c {word_str} $repo)"'),
+         caption = glue('Results of "sum(ag -c $word $repo)"'),
          x = 'Repo', y = 'Count') +
     theme(text = element_text(size = 18))
 

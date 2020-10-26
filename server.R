@@ -5,6 +5,11 @@ server <- function(input, output, session) {
 
 # Reactive Vals -----------------------------------------------------------
 
+  # Should be pin_reactive, but datafile boards aren't
+  # handling ETAG cache well right now
+  h <- reactiveVal(
+    pin_get('cl_hist', board = 'conscious_lang')
+  )
   d <- reactiveVal()
 
 # ObserveEvents -----------------------------------------------------------

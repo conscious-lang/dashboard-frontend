@@ -7,23 +7,25 @@ server <- function(input, output, session) {
 
   # Should be pin_reactive, but datafile boards aren't
   # handling ETAG cache well right now
-  h <- reactiveVal(
+  raw <- reactiveVal(
     pin_get('cl_hist', board = 'conscious_lang')
   )
+  h <- reactiveVal()
   d <- reactiveVal()
   org_repo <- reactiveVal(list(org = 'All', repo = 'All'))
 
 # ObserveEvents -----------------------------------------------------------
 
-  observeEvent(h(), {
-    tmp <- h() %>%
+  observeEvent(raw(), {
+    # if raw updates, reset d() and h()
+    h(raw())
+    d(raw() %>%
       filter(date == max(date)) %>%
-      select(-date)
-    d(tmp)
-  })
+      select(-date))
 
-  observeEvent(d(), {
-    orgs <- d() %>%
+    # now get the org list from raw()
+    orgs <- raw() %>%
+      filter(date == max(date)) %>%
       pull(org) %>%
       unique() %>%
       sort()
@@ -35,13 +37,15 @@ server <- function(input, output, session) {
 
   observeEvent(input$side_org, {
     repos <- if (input$side_org == 'All') {
-      d() %>%
+      raw() %>%
+        filter(date == max(date)) %>%
         mutate(label = glue('{org}/{repo}')) %>%
         pull(label) %>%
         unique() %>%
         sort()
     } else {
-      d() %>%
+      raw() %>%
+        filter(date == max(date)) %>%
         filter(org == input$side_org) %>%
         pull(repo) %>%
         unique() %>%
@@ -70,6 +74,18 @@ server <- function(input, output, session) {
       or$repo <- input$side_repo
     }
     org_repo(or)
+  })
+
+  observeEvent(org_repo(),{
+    or <- org_repo()
+    tmp <- raw() %>%
+      filter(if (or$org  == 'All') TRUE else org  == or$org) %>%
+      filter(if (or$repo == 'All') TRUE else repo == or$repo)
+    h(tmp)
+    tmp <- tmp %>%
+      filter(date == max(date)) %>%
+      select(-date)
+    d(tmp)
   })
 
 # Bar graphs --------------------------------------------------------------

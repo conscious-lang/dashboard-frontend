@@ -52,7 +52,7 @@ line_plot <- function(h,word) {
                                tooltip = glue('{date}: {word}\n{repos} repos')),
       size = 3, colour = '#CB333B') +
     labs(title = NULL,
-         caption = glue('Mean words/repo over time"'),
+         caption = glue('Mean words/repo over time'),
          x = 'Date', y = 'Count per Repo') +
     theme(text = element_text(size = 18))
 

@@ -11,12 +11,14 @@ server <- function(input, output, session) {
     pin_get('cl_hist', board = 'conscious_lang')
   )
   d <- reactiveVal()
+  org_repo <- reactiveVal(list(org = 'All', repo = 'All'))
 
 # ObserveEvents -----------------------------------------------------------
 
   observeEvent(h(), {
     tmp <- h() %>%
-      filter(date == max(date))
+      filter(date == max(date)) %>%
+      select(-date)
     d(tmp)
   })
 
@@ -48,9 +50,27 @@ server <- function(input, output, session) {
     repos <- c('All',repos)
 
     updateSelectInput(session, 'side_repo',
-                      choices = repos, selected = input$side_repo)
+                      choices = repos, selected = 'All')
+
+    # Detected an update to Org, stash it
+    o <- org_repo()
+    o$org <- input$side_org ; o$repo <- 'All'
+    org_repo(o)
   })
 
+  observeEvent(input$side_repo, {
+    # Cleanly store org/repo even when "all" selected
+    or <- org_repo()
+    if (str_detect(input$side_repo,'/')) {
+      split <- str_split_fixed(input$side_repo,'/',2)
+      or$org <- split[1]
+      or$repo <- split[2]
+    } else {
+      # Org should already be set in the other observer
+      or$repo <- input$side_repo
+    }
+    org_repo(or)
+  })
 
 # Bar graphs --------------------------------------------------------------
 
@@ -117,7 +137,11 @@ server <- function(input, output, session) {
 # Tables ------------------------------------------------------------------
 
   output$table <- DT::renderDataTable({
+
+    or <- org_repo()
     d() %>%
+      filter(if (or$org  == 'All') TRUE else org  == or$org) %>%
+      filter(if (or$repo == 'All') TRUE else repo == or$repo) %>%
       arrange(url) %>%
       rowwise() %>%
       mutate(url = map_chr(url, ~ toString(htmltools::tags$a(href=url,url))),
@@ -130,15 +154,18 @@ server <- function(input, output, session) {
   })
 
   output$deltas <- DT::renderDataTable({
+    or <- org_repo()
     h() %>%
+      filter(if (or$org  == 'All') TRUE else org  == or$org) %>%
+      filter(if (or$repo == 'All') TRUE else repo == or$repo) %>%
       arrange(date) %>%
       group_by(url) %>%
-      summarise(across(where(is.integer), ~{last(.x) - nth(.x,-2L)},
+      summarise(across(where(is.numeric), ~{last(.x) - nth(.x,-2L)},
                        .names = "delta_{.col}")) %>%
       ungroup() %>%
       rowwise() %>%
       mutate(url = map_chr(url, ~ toString(htmltools::tags$a(href=url,url))),
-             total = sum(c_across(where(is.integer)))) %>%
+             total = sum(c_across(where(is.numeric)))) %>%
       relocate(total, .after = url) %>%
       arrange(total) %>%
       DT::datatable(escape=F)

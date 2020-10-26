@@ -3,61 +3,116 @@ library(tidyverse)
 
 server <- function(input, output, session) {
 
+# Reactive Vals -----------------------------------------------------------
+
+  d <- reactiveVal()
+
+# ObserveEvents -----------------------------------------------------------
+
+  observeEvent(h(), {
+    tmp <- h() %>%
+      filter(date == max(date))
+    d(tmp)
+  })
+
+  observeEvent(d(), {
+    orgs <- d() %>%
+      pull(org) %>%
+      unique() %>%
+      sort()
+    orgs <- c('All',orgs)
+
+    updateSelectInput(session, 'side_org',
+                      choices = orgs, selected = input$side_org)
+  })
+
+  observeEvent(input$side_org, {
+    repos <- if (input$side_org == 'All') {
+      d() %>%
+        mutate(label = glue('{org}/{repo}')) %>%
+        pull(label) %>%
+        unique() %>%
+        sort()
+    } else {
+      d() %>%
+        filter(org == input$side_org) %>%
+        pull(repo) %>%
+        unique() %>%
+        sort()
+    }
+    repos <- c('All',repos)
+
+    updateSelectInput(session, 'side_repo',
+                      choices = repos, selected = input$side_repo)
+  })
+
+
+# Bar graphs --------------------------------------------------------------
+
   output$plot1 <- renderGirafe({
-    bar_plot(d,blacklist)
+    bar_plot(d(),blacklist)
   })
 
   output$plot2 <- renderGirafe({
-    bar_plot(d,whitelist)
+    bar_plot(d(),whitelist)
   })
 
   output$plot3 <- renderGirafe({
-    bar_plot(d,master)
+    bar_plot(d(),master)
   })
 
   output$plot4 <- renderGirafe({
-    bar_plot(d,slave)
+    bar_plot(d(),slave)
   })
 
+
+# History Graphs ----------------------------------------------------------
+
   output$hist1 <- renderGirafe({
-    line_plot(h,blacklist)
+    line_plot(h(),blacklist)
   })
 
   output$hist2 <- renderGirafe({
-    line_plot(h,whitelist)
+    line_plot(h(),whitelist)
   })
 
   output$hist3 <- renderGirafe({
-    line_plot(h,master)
+    line_plot(h(),master)
   })
 
   output$hist4 <- renderGirafe({
-    line_plot(h,slave)
+    line_plot(h(),slave)
   })
 
+
+# Info Boxes --------------------------------------------------------------
+
   output$blacklist <- renderInfoBox({
-    infoBox("Blacklist", sum(d$blacklist),
+    infoBox("Blacklist", sum(d()$blacklist),
             subtitle = 'Total in all repos',
             icon = icon('dice-one'), color = 'red')
   })
   output$whitelist <- renderInfoBox({
-    infoBox("Whitelist", sum(d$whitelist),
+    infoBox("Whitelist", sum(d()$whitelist),
             subtitle = 'Total in all repos',
             icon = icon('dice-two'), color = 'yellow')
   })
   output$master <- renderInfoBox({
-    infoBox("Master", sum(d$master),
+    infoBox("Master", sum(d()$master),
             subtitle = 'Total in all repos',
             icon = icon('dice-three'), color = 'blue')
   })
   output$slave <- renderInfoBox({
-    infoBox("Slave", sum(d$slave),
+    infoBox("Slave", sum(d()$slave),
             subtitle = 'Total in all repos',
             icon = icon('dice-four'), color = 'purple')
   })
 
+
+# Tables ------------------------------------------------------------------
+
   output$table <- DT::renderDataTable({
-    d %>%
+    d() %>%
       arrange(url) %>%
       rowwise() %>%
       mutate(url = map_chr(url, ~ toString(htmltools::tags$a(href=url,url))),
@@ -70,7 +125,7 @@ server <- function(input, output, session) {
   })
 
   output$deltas <- DT::renderDataTable({
-    h %>%
+    h() %>%
       arrange(date) %>%
       group_by(url) %>%
       summarise(across(where(is.integer), ~{last(.x) - nth(.x,-2L)},
@@ -82,15 +137,6 @@ server <- function(input, output, session) {
       relocate(total, .after = url) %>%
       arrange(total) %>%
       DT::datatable(escape=F)
-  })
-
-  observe({
-    choices <- d %>%
-      mutate(label = glue('{org}/{repo}')) %>%
-      arrange(label) %>%
-      dplyr::pull(label) # thanks, git2r::pull ...
-
-    updateSelectInput(session, 'repo', choices = choices, selected = NULL)
   })
 
   output$filetable <- DT::renderDataTable({

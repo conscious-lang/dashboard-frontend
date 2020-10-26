@@ -6,7 +6,9 @@ sidebar <- dashboardSidebar(
               menuItem("History",    tabName = "history", icon = icon("chart-line")),
               menuItem("Tables",     tabName = "tables",  icon = icon("table")),
               menuItem("Repo Files", tabName = "files",   icon = icon("search"))
-  )
+  ),
+  selectInput('side_org','Org','All','All'),
+  selectInput('side_repo','Repo','All','All')
 )
 
 body <- dashboardBody(
@@ -72,9 +74,6 @@ body <- dashboardBody(
     tabItem(tabName = "files",
             h2("Word counts per file in a given repo"),
             fluidRow(
-              box(title = 'Repo', width = 6,
-                  selectInput('repo',NULL,c('Please wait'))
-              ),
               box(title = 'Word', width = 3,
                   selectInput('word',NULL,
                               c('blacklist','whitelist','master','slave'))

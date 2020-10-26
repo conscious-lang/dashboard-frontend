@@ -7,8 +7,7 @@ library(pins)
 pins::board_register_datatxt(name = "conscious_lang",
                              url = "http://dev.stats.eng.ansible.com:7032/data.txt")
 
-d <- pin_get('cl_results', board = 'conscious_lang')
-h <- pin_get('cl_hist', board = 'conscious_lang')
+h <- pin_reactive('cl_hist', board = 'conscious_lang')
 
 # Functions
 bar_plot <- function(d,word) {

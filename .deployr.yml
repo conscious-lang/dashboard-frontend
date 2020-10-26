@@ -1,3 +1,4 @@
 host: ansiblestats
 source: /home/greg/DataProjects/ConsciousLang/
 target: /srv/shiny-server/apps/ConsciousLanguage/
+restart_shiny: true

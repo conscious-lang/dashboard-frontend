@@ -154,10 +154,7 @@ server <- function(input, output, session) {
 
   output$table <- DT::renderDataTable({
 
-    or <- org_repo()
     d() %>%
-      filter(if (or$org  == 'All') TRUE else org  == or$org) %>%
-      filter(if (or$repo == 'All') TRUE else repo == or$repo) %>%
       arrange(url) %>%
       rowwise() %>%
       mutate(url = map_chr(url, ~ toString(htmltools::tags$a(href=url,url))),
@@ -170,10 +167,7 @@ server <- function(input, output, session) {
   })
 
   output$deltas <- DT::renderDataTable({
-    or <- org_repo()
     h() %>%
-      filter(if (or$org  == 'All') TRUE else org  == or$org) %>%
-      filter(if (or$repo == 'All') TRUE else repo == or$repo) %>%
       arrange(date) %>%
       group_by(url) %>%
       summarise(across(where(is.numeric), ~{last(.x) - nth(.x,-2L)},
@@ -188,11 +182,18 @@ server <- function(input, output, session) {
   })
 
   output$filetable <- DT::renderDataTable({
-    input$search # depend on go button
+    if (input$side_org == 'All') {
+      return(data.frame(message = 'Please select a specific Org'))
+    }
 
+    if (input$side_repo == 'All') {
+      return(data.frame(message = 'Please select a specific Repo'))
+    }
+
+    repo = paste(input$side_org, input$side_repo, sep = '/')
     httr::GET(url  = 'http://dev.stats.eng.ansible.com:7033',
               path = '/search',
-              query = list(repo = input$repo, word = input$word)
+              query = list(repo = repo, word = input$word)
     ) -> res
 
     httr::content(res,'parsed')

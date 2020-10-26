@@ -83,8 +83,6 @@ body <- dashboardBody(
                   selectInput('word',NULL,
                               c('blacklist','whitelist','master','slave'))
               ),
-              box(width = 2,
-                  actionButton('search', 'Search'))
             ),
             DT::dataTableOutput('filetable')
     ),

@@ -39,3 +39,31 @@ bar_plot <- function(d,word) {
                         opts_hover_inv(css = "opacity:0.7;")
          ))
 }
+
+line_plot <- function(h,word) {
+  word_str <- quo_name(enquo(word))
+
+  plot <- h %>%
+    group_by(date) %>%
+    distinct(org,repo,.keep_all = T) %>%
+    summarise(across(where(is.numeric), mean), repos = n()) %>%
+    mutate(across(where(is.numeric), round)) %>%
+    select(date,word = {{word}}, repos) %>%
+    ggplot(aes(date,word)) +
+    geom_line(size = 1, colour = '#CB333B') +
+    geom_point_interactive(aes(data_id = date,
+                               tooltip = glue('{date}: {word}\n{repos} repos')),
+      size = 3, colour = '#CB333B') +
+    labs(title = NULL,
+         caption = glue('Mean words/repo over time"'),
+         x = 'Date', y = 'Count per Repo') +
+    theme(text = element_text(size = 18))
+
+  girafe(ggobj = plot, width_svg = 10, height_svg = 4,
+         options = list(opts_tooltip(offx=20,offy=20),
+                        opts_sizing(width = .5),
+                        opts_selection(type = 'none'),
+                        opts_toolbar(position = "bottomleft"),
+                        opts_hover_inv(css = "opacity:0.7;")
+         ))
+}

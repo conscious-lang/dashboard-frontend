@@ -19,6 +19,22 @@ server <- function(input, output, session) {
     bar_plot(d,slave)
   })
 
+  output$hist1 <- renderGirafe({
+    line_plot(h,blacklist)
+  })
+
+  output$hist2 <- renderGirafe({
+    line_plot(h,whitelist)
+  })
+
+  output$hist3 <- renderGirafe({
+    line_plot(h,master)
+  })
+
+  output$hist4 <- renderGirafe({
+    line_plot(h,slave)
+  })
+
   output$blacklist <- renderInfoBox({
     infoBox("Blacklist", sum(d$blacklist),
             subtitle = 'Total in all repos',

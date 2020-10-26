@@ -37,7 +37,22 @@ body <- dashboardBody(
     ),
     tabItem(tabName = "history",
             h2("Time-series history of total counts"),
-            p("TBD - we don't have historical data yet")
+            fluidRow(
+              box(title = 'Blacklist' ,status = "primary",
+                  solidHeader = TRUE,
+                  girafeOutput("hist1", height = 290)),
+              box(title = 'Whitelist', status = "primary",
+                  solidHeader = TRUE,
+                  girafeOutput("hist2", height = 290))
+            ),
+            fluidRow(
+              box(title = 'Master', status = "primary",
+                  solidHeader = TRUE,
+                  girafeOutput("hist3", height = 290)),
+              box(title = 'Slave', status = "primary",
+                  solidHeader = TRUE,
+                  girafeOutput("hist4", height = 290))
+            )
     ),
     tabItem(tabName = "tables",
             h2("Searchable / Sortable tables of counts & changes"),

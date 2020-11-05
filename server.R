@@ -158,7 +158,7 @@ server <- function(input, output, session) {
       arrange(url) %>%
       rowwise() %>%
       mutate(url = map_chr(url, ~ toString(htmltools::tags$a(href=url,url))),
-             total = sum(c_across(where(is.integer)))) %>%
+             total = sum(c_across(where(is.numeric)))) %>%
       relocate(total, .after = url) %>%
       ungroup() %>%
       select(-org,-repo) %>% # redundant for display purposes
